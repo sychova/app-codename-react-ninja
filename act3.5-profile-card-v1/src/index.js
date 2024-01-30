@@ -18,14 +18,42 @@ function App() {
 }
 
 function Avatar() {
-  return <img src="" alt="Anastasiya Sychova" />;
+  return (
+    <img
+      className="avatar"
+      src="anastasiya-sychova.jpeg"
+      alt="Anastasiya Sychova"
+    />
+  );
 }
 
-function Intro() {}
+function Intro() {
+  return (
+    <div>
+      <h1>Anastasiya Sychova</h1>
+      <p>Some bio</p>
+    </div>
+  );
+}
 
-function SkillList() {}
+function SkillList() {
+  return (
+    <div className="skill-list">
+      <Skill skill="Java Script" color="blue" />
+      <Skill skill="Node JS" color="red" />
+      <Skill skill="React" color="yellow" />
+      <Skill skill="Type Script" color="green" />
+    </div>
+  );
+}
 
-function Skill() {}
+function Skill(props) {
+  return (
+    <div className="skill" style={{ backgroundColor: props.color }}>
+      <span>{props.skill}</span>
+    </div>
+  );
+}
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement);
