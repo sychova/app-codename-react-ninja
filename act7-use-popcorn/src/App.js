@@ -53,16 +53,27 @@ const average = (arr) =>
 const KEY = "657ac5e5";
 
 export default function App() {
+  const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const query = "interstellar";
+  const [selectedId, setSelectedId] = useState(null);
+
+  function handleSelectMovie(id) {
+    setSelectedId((selectedId) => (id === selectedId ? null : id));
+  }
+
+  function handleClose() {
+    setSelectedId(null);
+  }
 
   useEffect(() => {
     async function fetchMovies() {
       try {
         setIsLoading(true);
+        setError("");
+
         const res = await fetch(
           `http://www.omdbapi.com/?i=tt3896198&apikey=${KEY}&s=${query}`
         );
@@ -82,26 +93,41 @@ export default function App() {
         setIsLoading(false);
       }
     }
+
+    if (query.length < 3) {
+      setMovies([]);
+      setError("");
+      return;
+    }
+
     fetchMovies();
-  }, []);
+  }, [query]);
 
   return (
     <>
       <NavBar>
         <Logo />
-        <Search />
+        <Search query={query} setQuery={setQuery} />
         <NumResults movies={movies} />
       </NavBar>
       <Main>
         <Box>
           {/* {isLoading ? <Loader /> : <MovieList movies={movies} />} */}
           {isLoading && <Loader />}
-          {!isLoading && !error && <MovieList movies={movies} />}
+          {!isLoading && !error && (
+            <MovieList movies={movies} onSelectMovie={handleSelectMovie} />
+          )}
           {error && <ErrorMessage message={error} />}
         </Box>
         <Box>
-          <WatchedSummary watched={watched} />
-          <WatchedMoviesList watched={watched} />
+          {selectedId ? (
+            <MovieDetails selectedId={selectedId} onCloseMovie={handleClose} />
+          ) : (
+            <>
+              <WatchedSummary watched={watched} />
+              <WatchedMoviesList watched={watched} />
+            </>
+          )}
         </Box>
       </Main>
     </>
@@ -129,9 +155,7 @@ function Logo() {
   );
 }
 
-function Search() {
-  const [query, setQuery] = useState("");
-
+function Search({ query, setQuery }) {
   return (
     <input
       className="search"
@@ -168,31 +192,6 @@ function Box({ children }) {
   );
 }
 
-function MovieList({ movies }) {
-  return (
-    <ul className="list">
-      {movies?.map((movie) => (
-        <Movie movie={movie} key={movie.imdbID} />
-      ))}
-    </ul>
-  );
-}
-
-function Movie({ movie }) {
-  return (
-    <li>
-      <img src={movie.Poster} alt={`${movie.Title} poster`} />
-      <h3>{movie.Title}</h3>
-      <div>
-        <p>
-          <span>🗓</span>
-          <span>{movie.Year}</span>
-        </p>
-      </div>
-    </li>
-  );
-}
-
 // function WatchedBox() {
 //   const [watched, setWatched] = useState(tempWatchedData);
 //   const [isOpen2, setIsOpen2] = useState(true);
@@ -214,6 +213,41 @@ function Movie({ movie }) {
 //     </div>
 //   );
 // }
+
+function MovieList({ movies, onSelectMovie }) {
+  return (
+    <ul className="list list-movies">
+      {movies?.map((movie) => (
+        <Movie movie={movie} key={movie.imdbID} onSelectMovie={onSelectMovie} />
+      ))}
+    </ul>
+  );
+}
+
+function Movie({ movie, onSelectMovie }) {
+  return (
+    <li onClick={() => onSelectMovie(movie.imdbID)}>
+      <img src={movie.Poster} alt={`${movie.Title} poster`} />
+      <h3>{movie.Title}</h3>
+      <div>
+        <p>
+          <span>🗓</span>
+          <span>{movie.Year}</span>
+        </p>
+      </div>
+    </li>
+  );
+}
+
+function MovieDetails({ selectedId, onCloseMovie }) {
+  return (
+    <div className="details">
+      <button className="btn-back" onClick={onCloseMovie}>
+        &larr;
+      </button>
+    </div>
+  );
+}
 
 function WatchedSummary({ watched }) {
   const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
