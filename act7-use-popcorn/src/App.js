@@ -65,7 +65,7 @@ export default function App() {
     setSelectedId((selectedId) => (id === selectedId ? null : id));
   }
 
-  function handleClose() {
+  function handleCloseMovie() {
     setSelectedId(null);
   }
 
@@ -78,13 +78,18 @@ export default function App() {
   }
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function fetchMovies() {
       try {
         setIsLoading(true);
         setError("");
 
         const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+          {
+            signal: controller.signal,
+          }
         );
 
         if (!res.ok)
@@ -95,9 +100,13 @@ export default function App() {
         if (data.Response === "False") throw new Error("Movie not found");
 
         setMovies(data.Search);
+        setError("");
       } catch (err) {
         console.error(err.message);
-        setError(err.message);
+
+        if (err.name !== "AbortError") {
+          setError(err.message);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -110,6 +119,10 @@ export default function App() {
     }
 
     fetchMovies();
+
+    return function () {
+      controller.abort();
+    };
   }, [query]);
 
   return (
@@ -132,7 +145,7 @@ export default function App() {
           {selectedId ? (
             <MovieDetails
               selectedId={selectedId}
-              onCloseMovie={handleClose}
+              onCloseMovie={handleCloseMovie}
               onAddWatched={handleAddWatched}
               watched={watched}
             />
@@ -294,6 +307,20 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     onAddWatched(newWatchedMovie);
     onCloseMovie();
   }
+
+  useEffect(() => {
+    function callback(e) {
+      if (e.code === "Escape") {
+        onCloseMovie();
+      }
+    }
+
+    document.addEventListener("keydown", callback);
+
+    return function () {
+      document.removeEventListener("keydown", callback);
+    };
+  }, [onCloseMovie]);
 
   useEffect(() => {
     async function getMovieDetails() {
