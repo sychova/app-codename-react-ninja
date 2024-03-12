@@ -22,7 +22,7 @@ StarRating.propTypes = {
 };
 
 export default function StarRating({
-  maxRaiting = 5,
+  maxRating = 5,
   color = "#fcc419",
   size = 48,
   className = "",
@@ -48,7 +48,7 @@ export default function StarRating({
   return (
     <div style={containerStyle} className={className}>
       <div style={starContainerStyle}>
-        {Array.from({ length: maxRaiting }, (_, i) => (
+        {Array.from({ length: maxRating }, (_, i) => (
           <Star
             key={i}
             full={tempRating ? tempRating >= i + 1 : rating >= i + 1}
@@ -61,7 +61,7 @@ export default function StarRating({
         ))}
       </div>
       <p style={textStyle}>
-        {messages.length === maxRaiting
+        {messages.length === maxRating
           ? messages[tempRating ? tempRating - 1 : rating - 1]
           : tempRating || rating || ""}
       </p>
