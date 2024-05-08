@@ -12,6 +12,7 @@ import Message from "./Message";
 import Spinner from "./Spinner";
 import { useCities } from "../contexts/CitiesContext";
 import { useNavigate } from "react-router-dom";
+import { flagemojiToPNG } from "../utils/flagemojiToPNG";
 
 export function convertToEmoji(countryCode) {
   const codePoints = countryCode
@@ -102,7 +103,7 @@ function Form() {
           onChange={(e) => setCityName(e.target.value)}
           value={cityName}
         />
-        <span className={styles.flag}>{emoji}</span>
+        <span className={styles.flag}>{flagemojiToPNG(emoji)}</span>
       </div>
 
       <div className={styles.row}>
